@@ -1,0 +1,114 @@
+---
+title: "IrisVisualisation"
+output: html_document
+date: "2024-03-18"
+---
+I chose to use the 'Iris Species' dataset to visualise, which is a set of sepal and petal specifications for 50 flowers of each iris species, Setosa, Versicolor, and Virginica. 
+The dataset can be found at https://www.kaggle.com/datasets/uciml/iris
+
+```{r load_data}
+# Load the dataset from csv
+data <- read.csv("Iris.csv")
+
+head(data) # shows the head of the data
+print("data structure")
+str(data)
+print("data summary")
+summary(data)
+```
+
+## BoxPlot
+
+The first plot I decided to use is a box and whisker plot. The objective of this plot is to model the distribution and skewness of data based on their quartile ranges. In this example, the distributions of sepal lengths are analysed.
+
+One thing the box plot displays about the data, is that each species sepal length's have different medians, as well as values for Q1 and Q1. 
+Maximums and minimums: (Values are approximated from axis)
+-Setosa flowers sepal lengths all exist in the range of 4.0 - 5.75 -Iris flowers sepal lengths all exist in the range of 5.0-7.0
+-Virginica flowers sepal lengths all exist in the range of 5.5-7.8
+
+Q1/Median/Q3 (Values are approximated from axis)
+- Setosa: 4.75/5.0/5.25
+- Iris: 5.75/6.0/6.25
+- Virginica: 6.25/6.5/7.0
+
+This data shows that setosa flowers have the lowest sepal lengths, versicolor flowers have medium sepal lengths and virginica flowers having the highest sepal lengths. 
+
+The data also shows that the setosa and versicolor flowers sepal lengths do not have much overlap. This means a clustering algorithm could easily differentiate between the two classes based on this feature.
+
+However, the versicolor's Q3 and virginica's Q1 seem to have a slight overlap, implying that a clustering algorithm may have trouble differentiating between points closer to the upper bound of versicolor flowers, or closer to the lower bound of virginica flowers.
+
+```{r Box_Plot, echo=TRUE, fig.show='inline'}
+# Create a box plot for Sepal Length
+boxplot(SepalLengthCm~ Species, data = data, 
+        main = "Sepal Length by Iris Species",
+        xlab = "Species",
+        ylab = "Sepal Length")
+```
+
+## Scatter plot
+
+The second plot I created is a scatter plot of the sepal width plotted against the sepal length. This scatter plot clearly shows the data points clustering in certain areas based on their species. The versicolor flowers appear to be clustered between the setosa and virginica flowers, with some versicolor flowers overlapping with the virginica cluster.
+
+The clustering of data points suggests that sepal width and sepal length are correlated variables, which makes sense given that both variables are relating to the sepal of the flower.
+
+```{r Scatter_Plot, echo=TRUE, fig.show='inline'}
+# Convert Species column to factor so scatter plot can be made
+data$Species <- as.factor(data$Species)
+
+# Create a scatter plot with color-coded points plotting Width against Length
+plot(data$SepalLengthCm, data$SepalWidthCm, 
+     col = as.numeric(data$Species), 
+     pch = 19,
+     xlab = "Sepal Length", 
+     ylab = "Sepal Width",
+     main = "Sepal Length vs. Sepal Width by Iris Species")
+
+# Add a legend
+legend("topright",
+       legend = levels(data$Species), 
+       col = 1:length(levels(data$Species)), 
+       pch = 19,
+       title = "Species",
+       cex = 0.8)  # Adjusts the size of the legend text
+```
+
+## Distribution Plot
+
+The third data visualization technique I used was a distribution plot, with density on the y-axis and petal length on the x axis. 
+
+This visualization shows that the setosa flowers have a high density at their median value (lower variance), while the versicolor and virginica distributions are more spread out (higher variance).
+
+This plot also highlights how the versicolor and virginica flowers have an overlap in petal length around the 5cm point. A statistical test could be done to figure out the ratio of virginica flowers petal length's that overlap with versicolor petal lengths.
+
+
+``` {r Distribution_Plot, echo=TRUE, fig.show='inline'}
+library(ggplot2)
+# Plot distribution plots for each species using ggplot2
+ggplot(data, aes(x = PetalLengthCm, fill = Species)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution of Petal Length by Iris Species", x = "Petal Length", y = "Density") +
+  scale_fill_manual(values = c("red", "blue", "green"), name = "Species") +
+  theme_minimal()
+```
+
+Based on the insights gathered from the plots, this data could be modelled well with a random forest, support vector machine, or logistic regression algorithm.
+
+Because of the overlap in petal length and sepal length between the virginica and versicolor flowers, a clustering algorithm would likely have trouble differentiating between these two classes and would not be as optimal for modelling this data.
+
+``` {r 3D_Plot, echo=TRUE, fig.show='inline'}
+
+# 3D scatter plot (conveys similar information to other plots, highlighting how the species cluster around certain areas even with 3 variables.)
+
+# Import library for 3d scatter plot http://www.sthda.com/english/wiki/scatterplot3d-3d-graphics-r-software-and-data-visualization
+library(scatterplot3d)
+
+# Define colors for each species
+species_colors <- c("Iris-setosa" = "red", "Iris-versicolor" = "blue", "Iris-virginica" = "green")
+data$Species_Color <- species_colors[data$Species]
+
+# Creates a 3D scatter plot
+scatterplot3d(data$SepalLengthCm, data$SepalWidthCm, data$PetalLengthCm, 
+              main="3D Scatter Plot of Iris Dataset",
+              xlab="Sepal Length", ylab="Sepal Width", zlab="Petal Length",
+              color=data$Species_Color)
+```
